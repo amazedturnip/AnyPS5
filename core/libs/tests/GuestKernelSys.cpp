@@ -397,6 +397,8 @@ int main() {
 #endif
     CheckProcessQueries();
     Require(setsid_nid_postfix() == -1 && Error() == 1);
+    Require(is_in_sandbox_nid_postfix() == 1);
+    Require(sceKernelIsInSandbox() == 1);
     Require(umask_nid_postfix(0) == 022);
     Require(umask_nid_postfix(07777) == 0);
     Require(umask_nid_postfix(022) == 07777);
