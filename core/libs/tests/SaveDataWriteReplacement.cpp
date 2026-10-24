@@ -84,6 +84,8 @@ int main() {
 
 #ifdef SAVEDATA_NATIVE_BACKEND
     Require(sceSaveDataTerminate() == 0);
+#else
+    Require(sceSaveDataAbort() == 0);
 #endif
     std::filesystem::current_path(originalDirectory);
     std::filesystem::remove_all(root);

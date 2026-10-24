@@ -93,9 +93,10 @@ int APS5_VABI sceSaveDataTransferringMount(const SaveDataTransferringMount* moun
     return rc;
 }
 
-int APS5_VABI sceSaveDataAbort() {
-    NotImplemented_nid_no_patch(__func__);
-    return 0;
+int APS5_VABI sceSaveDataAbort(void) {
+    const int rc = savedata::abort_internal();
+    SAVEDATA_TRACE("sceSaveDataAbort -> 0x%08x", static_cast<unsigned>(rc));
+    return rc;
 }
 
 int APS5_VABI sceSaveDataBindPsnAccount(void) {
