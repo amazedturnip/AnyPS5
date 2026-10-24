@@ -37,6 +37,7 @@ int APS5_VABI scePadGetControllerInformation(int, PadControllerInformation*);
 int APS5_VABI scePadDeviceClassParseData(int, const PadData*, PadDeviceClassData*);
 int APS5_VABI scePadDeviceClassGetExtendedInformation(int, PadDeviceClassExtendedInformation*);
 int APS5_VABI scePadSetVibration(int, const PadVibrationParam*);
+int APS5_VABI scePadDisableVibration(std::int32_t, bool);
 int APS5_VABI scePadGetExtControllerInformation(int, void*);
 int APS5_VABI scePadResetLightBar(int);
 int APS5_VABI scePadSetLightBar(int, const PadLightBarParam*);
@@ -355,6 +356,9 @@ static void CheckSpecialPort(int user, int handle) {
     const PadLightBarParam lightBar{0, 0, 255};
     Require(scePadSetVibration(special, nullptr) == PAD_ERROR_INVALID_ARG);
     Require(scePadSetVibration(special, &vibration) == PAD_OK);
+    Require(scePadDisableVibration(special + 100, true) == PAD_ERROR_INVALID_HANDLE);
+    Require(scePadDisableVibration(special, true) == PAD_OK);
+    Require(scePadDisableVibration(special, false) == PAD_OK);
     Require(scePadSetLightBar(special, &lightBar) == PAD_OK);
     Require(scePadResetLightBar(special) == PAD_OK);
     Require(scePadSetMotionSensorState(special, true) == PAD_OK);

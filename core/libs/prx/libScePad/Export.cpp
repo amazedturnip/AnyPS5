@@ -552,8 +552,11 @@ int APS5_VABI scePadSetUserColor(std::int32_t handle, std::uint32_t color) {
 }
 
 int APS5_VABI scePadDisableVibration(std::int32_t handle, bool disabled) {
-    NotImplemented_nid_no_patch(__func__);
-    return 0;
+    if (!KnownHandle(handle)) return PAD_ERROR_INVALID_HANDLE;
+    if (disabled) {
+        Pad::SetVibration(0, 0);
+    }
+    return PAD_OK;
 }
 
 int APS5_VABI scePadSetVibrationStrength(std::int32_t handle, std::uint32_t strength) {
