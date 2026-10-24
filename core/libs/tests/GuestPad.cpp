@@ -646,6 +646,11 @@ int main() {
     Require(scePadSetLightBar(handle + 1, &lightBar) == PAD_ERROR_INVALID_HANDLE);
     Require(scePadResetLightBar(handle) == PAD_OK);
     Require(scePadResetLightBar(handle + 1) == PAD_ERROR_INVALID_HANDLE);
+    Require(scePadResetLightBarAll() == PAD_OK);
+    Require(scePadResetLightBarAllByPortType(PAD_PORT_TYPE_STANDARD) == PAD_OK);
+    Require(scePadResetLightBarAllByPortType(PAD_PORT_TYPE_SPECIAL) == PAD_OK);
+    Require(scePadResetLightBarAllByPortType(PAD_PORT_TYPE_REMOTE) == PAD_OK);
+    Require(scePadResetLightBarAllByPortType(99) == PAD_ERROR_INVALID_ARG);
     Require(scePadSetMotionSensorState(handle, true) == PAD_OK);
     Require(scePadSetMotionSensorState(handle, false) == PAD_OK);
     Require(scePadSetMotionSensorState(handle + 1, true) == PAD_ERROR_INVALID_HANDLE);
