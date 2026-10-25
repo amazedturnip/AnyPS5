@@ -5,10 +5,21 @@
 #include <cstdlib>
 #include <cstring>
 #include <initializer_list>
+#include <stdexcept>
 #include "SceTypes.hpp"
 
 static void Require(bool value) {
     if (!value) std::abort();
+}
+
+template <typename TCall>
+static bool Throws(TCall call) {
+    try {
+        call();
+    } catch (const std::runtime_error&) {
+        return true;
+    }
+    return false;
 }
 
 constexpr int BadContext = static_cast<int>(0x81940002);
@@ -115,6 +126,12 @@ int main() {
 
     Require(sceAcmContextDestroy(context2) == 0);
     Require(sceAcmContextDestroy(context2) == BadContext);
+
+    AcmBatchInfo dummyBatch{};
+    Require(Throws([&] { sceAcmBatchJobPriority(&dummyBatch, 0); }));
+    Require(Throws([] { sceAcm_ConvReverb_SharedIr(); }));
+    Require(Throws([] { sceAcm_IFFT(); }));
+    Require(Throws([] { sceAcmBatchJobNotification(); }));
 
     return 0;
 }
