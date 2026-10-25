@@ -370,4 +370,11 @@ int main() {
     Require(sceSysmoduleUnloadModule(kAudioPropagationModuleId) == 0);
     Require(sceSysmoduleIsLoaded(kAudioPropagationModuleId) == kModuleUnloaded);
     Require(sceSysmoduleGetModuleHandleInternal(kAudioPropagationModuleId, &audioPropagationHandle) == kModuleUnloaded);
+
+    Require(ThrowsRuntimeError([] { sceSysmoduleIsCalledFromSysModule(); }));
+    Require(ThrowsRuntimeError([] { sceSysmoduleIsCameraPreloaded(); }));
+    Require(ThrowsRuntimeError([] { sceSysmoduleLoadModuleByNameInternal(nullptr, 0, 0, 0, 0, 0); }));
+    Require(ThrowsRuntimeError([] { sceSysmoduleMapLibcForLibkernel(); }));
+    Require(ThrowsRuntimeError([] { sceSysmodulePreloadModuleForLibkernel(); }));
+    Require(ThrowsRuntimeError([] { sceSysmoduleUnloadModuleByNameInternal(); }));
 }
