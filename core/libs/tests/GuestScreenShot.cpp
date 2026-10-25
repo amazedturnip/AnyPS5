@@ -10,6 +10,7 @@
 #include <filesystem>
 #include <fstream>
 #include <random>
+#include <stdexcept>
 #include <string>
 
 namespace {
@@ -25,6 +26,16 @@ void Require(bool condition, const char* message) {
     if (condition) return;
     std::fprintf(stderr, "ScreenShot: %s\n", message);
     std::abort();
+}
+
+template <typename TCall>
+bool Throws(TCall call) {
+    try {
+        call();
+    } catch (const std::runtime_error&) {
+        return true;
+    }
+    return false;
 }
 
 void InstallProcessParameters(std::uint32_t sdkVersion) {
@@ -110,5 +121,11 @@ int main(int argc, char** argv) {
     InstallProcessParameters(large ? 0x3500000u : 0x34fffffu);
     TestDisableState();
     TestOverlay(large);
+    Require(Throws([] { sceScreenShotCapture(); }), "sceScreenShotCapture throws");
+    Require(Throws([] { sceScreenShotGetAppInfo(); }), "sceScreenShotGetAppInfo throws");
+    Require(Throws([] { sceScreenShotGetDrcParam(); }), "sceScreenShotGetDrcParam throws");
+    Require(Throws([] { sceScreenShotIsVshScreenCaptureDisabled(); }), "sceScreenShotIsVshScreenCaptureDisabled throws");
+    Require(Throws([] { sceScreenShotSetDrcParam(); }), "sceScreenShotSetDrcParam throws");
+    Require(Throws([] { sceScreenShotSetParam(); }), "sceScreenShotSetParam throws");
     return 0;
 }
