@@ -2,10 +2,21 @@
 #include "prx/libc/include/general/VabiMacros.hpp"
 #include <cstdint>
 #include <cstdlib>
+#include <stdexcept>
 
 namespace {
 
 void Require(bool value) { if (!value) std::abort(); }
+
+template <typename TCall>
+bool Throws(TCall call) {
+    try {
+        call();
+    } catch (const std::runtime_error&) {
+        return true;
+    }
+    return false;
+}
 
 constexpr int kStatusNone = 0;
 constexpr int kStatusInitialized = 1;
@@ -60,4 +71,7 @@ int main() {
     Require(sceGameCustomDataDialogGetResultA(result) == 0);
     Require(result[0] == kResultUserCanceled);
     Require(sceGameCustomDataDialogTerminate() == 0);
+
+    Require(Throws([] { sceGameCustomDataDialogGetResult(); }));
+    Require(Throws([] { sceGameCustomDataDialogOpen(); }));
 }
