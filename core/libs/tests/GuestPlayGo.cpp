@@ -152,6 +152,23 @@ static int CheckNoPlayGoFile(const char* root) {
     Require(scePlayGoGetChunkId(handle, nullptr, 0, &chunkCount) == 0 && chunkCount == 1);
     Require(scePlayGoClose(handle + 1) == badHandle);
     Require(scePlayGoClose(handle) == 0);
+
+    bool threwRequest = false;
+    try {
+        scePlayGoRequestNextChunk();
+    } catch (const std::runtime_error&) {
+        threwRequest = true;
+    }
+    Require(threwRequest);
+
+    bool threwSnapshot = false;
+    try {
+        scePlayGoSnapshot();
+    } catch (const std::runtime_error&) {
+        threwSnapshot = true;
+    }
+    Require(threwSnapshot);
+
     return 0;
 }
 
