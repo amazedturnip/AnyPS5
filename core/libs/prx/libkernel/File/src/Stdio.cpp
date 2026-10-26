@@ -836,6 +836,7 @@ int APS5_VABI dup2_nid_postfix(int from, int to) {
             throw std::runtime_error(std::string(__func__) + ": moving a guest socket onto standard descriptor " + std::to_string(to) + " is not supported");
         if (GuestSockets::DuplicateTo(from, to) < 0) return -1;
         if (from == to) return to;
+        EqueueDescriptorClosed(to);
         File::ForgetRandomDevice(to);
         File::ForgetArchivedFile(to);
 #ifdef _WIN32

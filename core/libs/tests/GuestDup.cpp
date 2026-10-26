@@ -15,6 +15,23 @@ constexpr int Unix = 1;
 constexpr int Stream = 1;
 constexpr int DescriptorSetSize = 1024;
 constexpr int Unopened = 0x1ffffff0;
+constexpr std::int16_t EvfiltUser = -11;
+constexpr std::uint16_t EvAdd = 0x0001;
+constexpr std::uint32_t NoteTrigger = 0x01000000;
+
+static KernelEvent UserChange(std::uint16_t flags, std::uint32_t fflags) {
+    KernelEvent change{};
+    change.ident = 1;
+    change.filter = EvfiltUser;
+    change.flags = flags;
+    change.fflags = fflags;
+    return change;
+}
+
+static int PollKqueue(int kq, KernelEvent* events, int count) {
+    const KernelTimespec zero{0, 0};
+    return kevent_nid_postfix(kq, nullptr, 0, events, count, &zero);
+}
 
 static void RequireFailure(int result, int error) {
     Require(result == -1);
@@ -132,6 +149,23 @@ static void SocketDuplicates() {
     for (const int descriptor : {target, pair[1], next[0], next[1], pipe[1], other[0], other[1]}) Require(close_nid_postfix(descriptor) == 0);
 }
 
+static void ReplacedKqueueIsClosed(bool socket) {
+    const int kq = kqueue_nid_postfix();
+    Require(kq >= 0);
+    const KernelEvent add = UserChange(EvAdd, 0);
+    const KernelEvent trigger = UserChange(0, NoteTrigger);
+    Require(kevent_nid_postfix(kq, &add, 1, nullptr, 0, nullptr) == 0);
+    Require(kevent_nid_postfix(kq, &trigger, 1, nullptr, 0, nullptr) == 0);
+    int source[2];
+    if (socket) Require(socketpair_nid_postfix(Unix, Stream, 0, source) == 0);
+    else Require(pipe_nid_postfix(source) == 0);
+    Require(dup2_nid_postfix(source[0], kq) == kq);
+    KernelEvent event{};
+    RequireFailure(PollKqueue(kq, &event, 1), GuestEbadf);
+    Require(close_nid_postfix(kq) == 0);
+    Require(close_nid_postfix(source[0]) == 0 && close_nid_postfix(source[1]) == 0);
+}
+
 static void RandomDeviceDuplicates() {
     const int random = open_nid_postfix("/dev/urandom", 0, 0);
     Require(random >= 0);
@@ -211,6 +245,8 @@ int main() {
     Dup2ReplacesTarget();
     BadDescriptors();
     SocketDuplicates();
+    ReplacedKqueueIsClosed(false);
+    ReplacedKqueueIsClosed(true);
     RandomDeviceDuplicates();
     DuplicatesShareStatusFlags();
 }
