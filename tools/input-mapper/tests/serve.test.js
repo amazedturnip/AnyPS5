@@ -37,7 +37,7 @@ function status(port, path) {
     });
 }
 
-test('a request target that is not a valid URL gets 400 and the server keeps serving', async t => {
+test('a request target that is not a valid URL gets 400 and the server keeps serving', { timeout: 10000 }, async t => {
     const port = await freePort();
     const child = spawn(process.execPath, [script], {env: {...process.env, PORT: String(port)}, stdio: ['ignore', 'pipe', 'inherit']});
     t.after(() => child.kill());
