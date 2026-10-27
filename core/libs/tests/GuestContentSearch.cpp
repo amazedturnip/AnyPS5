@@ -49,6 +49,9 @@ int main() {
     std::int64_t size = -1;
     std::int64_t updateId = -1;
     std::int32_t metadataId = -1;
+    std::int32_t metadataType = -1;
+    std::int32_t fieldSize = -1;
+    std::int64_t value = -1;
 
     Require(sceContentSearchGetContentLastUpdateId(&updateId) == ErrorNotInitialized);
     Require(sceContentSearchGetNumOfContent(&columnSet, 1, &count, &updateId) == ErrorNotInitialized);
@@ -57,6 +60,8 @@ int main() {
     Require(sceContentSearchOpenMetadata("/data/photo.jpg", &metadataId) == ErrorNotInitialized);
     Require(sceContentSearchOpenMetadataByContentId(1, &metadataId) == ErrorNotInitialized);
     Require(sceContentSearchCloseMetadata(1) == ErrorNotInitialized);
+    Require(sceContentSearchGetMetadataFieldInfo(1, "title", &metadataType, &fieldSize) == ErrorNotInitialized);
+    Require(sceContentSearchGetMetadataValue(1, "title", &value) == ErrorNotInitialized);
     Require(count == -1 && size == -1 && updateId == -1 && metadataId == -1);
 
     Require(sceContentSearchTerm() == ErrorNotInitialized);
@@ -82,6 +87,10 @@ int main() {
     updateId = -1;
     Require(sceContentSearchGetTotalContentSize(&columnSet, 1, &size, &updateId) == 0);
     Require(size == 0 && updateId == 0);
+    size = -1;
+    updateId = -1;
+    Require(sceContentSearchGetTotalContentSize(nullptr, 0, &size, &updateId) == 0);
+    Require(size == 0 && updateId == 0);
     count = -1;
     updateId = -1;
     Require(sceContentSearchSearchContent(&columnSet, 1, &orderBy, 1, 0, 92, &count, infos, &updateId) == 0);
@@ -95,6 +104,10 @@ int main() {
     Require(sceContentSearchGetNumOfContent(&columnSet, 1, nullptr, &updateId) == ErrorInvalidArgument);
     Require(sceContentSearchGetNumOfContent(&columnSet, 1, &count, nullptr) == ErrorInvalidArgument);
     Require(sceContentSearchGetTotalContentSize(nullptr, 1, &size, &updateId) == ErrorInvalidArgument);
+    Require(sceContentSearchGetTotalContentSize(&columnSet, 1, nullptr, &updateId) == ErrorInvalidArgument);
+    Require(sceContentSearchGetTotalContentSize(&columnSet, 1, &size, nullptr) == ErrorInvalidArgument);
+    Require(sceContentSearchSearchContent(&columnSet, 1, &orderBy, 1, 0, 2, nullptr, infos, &updateId) == ErrorInvalidArgument);
+    Require(sceContentSearchSearchContent(&columnSet, 1, &orderBy, 1, 0, 2, &count, infos, nullptr) == ErrorInvalidArgument);
     Require(sceContentSearchSearchContent(&columnSet, 1, &orderBy, 1, 0, 2, &count, nullptr, &updateId) == ErrorInvalidArgument);
     ContentSearchContentColumn unknownColumn{8, 0, &photo, 2};
     ContentSearchContentColumnSet unknownColumnSet{&unknownColumn, 1, 2};
@@ -117,6 +130,15 @@ int main() {
     Require(count == -1 && updateId == -1);
 
     Require(sceContentSearchCloseMetadata(1) == ErrorInvalidArgument);
+    Require(sceContentSearchOpenMetadata(nullptr, &metadataId) == ErrorInvalidArgument);
+    Require(sceContentSearchOpenMetadata("/data/photo.jpg", nullptr) == ErrorInvalidArgument);
+    Require(sceContentSearchOpenMetadataByContentId(1, nullptr) == ErrorInvalidArgument);
+    Require(sceContentSearchGetMetadataFieldInfo(1, nullptr, &metadataType, &fieldSize) == ErrorInvalidArgument);
+    Require(sceContentSearchGetMetadataFieldInfo(1, "title", nullptr, &fieldSize) == ErrorInvalidArgument);
+    Require(sceContentSearchGetMetadataFieldInfo(1, "title", &metadataType, nullptr) == ErrorInvalidArgument);
+    Require(sceContentSearchGetMetadataValue(1, nullptr, &value) == ErrorInvalidArgument);
+    Require(sceContentSearchGetMetadataValue(1, "title", nullptr) == ErrorInvalidArgument);
+    Require(metadataId == -1 && metadataType == -1 && fieldSize == -1 && value == -1);
 
     Require(sceContentSearchTerm() == 0);
     Require(sceContentSearchGetContentLastUpdateId(&updateId) == ErrorNotInitialized);
