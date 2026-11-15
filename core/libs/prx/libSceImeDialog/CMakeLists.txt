@@ -63,4 +63,14 @@ if(BUILD_TESTING)
         set_tests_properties(guest_ime_dialog_init_pointers PROPERTIES ENVIRONMENT_MODIFICATION
             "PATH=path_list_prepend:$<TARGET_FILE_DIR:libSceImeDialog>")
     endif()
+
+    add_test_executable(guest_ime_dialog_for_test_function_tests ${LIBS_INCLUDE_DIR}/tests/GuestImeDialogForTestFunction.cpp)
+    target_include_directories(guest_ime_dialog_for_test_function_tests PRIVATE ${LIBS_INCLUDE_DIR})
+    target_link_libraries(guest_ime_dialog_for_test_function_tests PRIVATE libSceImeDialog libSceIme libc)
+    configure_windows_unwind(guest_ime_dialog_for_test_function_tests)
+    add_test(NAME guest_ime_dialog_for_test_function COMMAND guest_ime_dialog_for_test_function_tests)
+    if(WIN32)
+        set_tests_properties(guest_ime_dialog_for_test_function PROPERTIES ENVIRONMENT_MODIFICATION
+            "PATH=path_list_prepend:$<TARGET_FILE_DIR:libSceImeDialog>")
+    endif()
 endif()
