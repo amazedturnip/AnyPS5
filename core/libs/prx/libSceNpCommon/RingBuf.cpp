@@ -93,6 +93,7 @@ void ReleaseBuffer(NpRingBufMemory& ringBuf) {
 extern "C" {
 
 void APS5_VABI _ZN3sce2np7RingBufC1Ev(NpRingBuf* self) {
+    Require(self != nullptr, "sce::np::RingBuf: null object");
     self->vtable = &RingBufVtable[2];
     ClearFields(*self);
 }

@@ -1,6 +1,7 @@
 #include "prx/libSceNpCommon/include/Api.hpp"
 #include <algorithm>
 #include <array>
+#include <cerrno>
 #include <cstdint>
 #include <cstring>
 #include <limits>
@@ -68,6 +69,55 @@ static void CheckRingBufCheckoutNullBlockSize() {
     _ZN3sce2np7RingBufD1Ev(&ring);
 }
 
+static void CheckRingBufCtorNullSelf() {
+    errno = 71;
+
+    bool nullThrew = false;
+    try {
+        _ZN3sce2np7RingBufC1Ev(nullptr);
+    } catch (const std::invalid_argument&) {
+        nullThrew = true;
+    }
+    Require(nullThrew);
+    Require(errno == 71);
+
+    bool aliasThrew = false;
+    try {
+        _ZN3sce2np7RingBufC2Ev(nullptr);
+    } catch (const std::invalid_argument&) {
+        aliasThrew = true;
+    }
+    Require(aliasThrew);
+
+    NpRingBuf ring{};
+    std::memset(&ring, 0x5A, sizeof(ring));
+    const auto savedVtable = ring.vtable;
+    const auto savedBuf = ring.buf;
+    const auto savedReadPointer = ring.readPointer;
+    const auto savedWritePointer = ring.writePointer;
+    const std::size_t savedSize = ring.size;
+    const std::size_t savedBufSize = ring.bufSize;
+
+    bool untouchedThrew = false;
+    try {
+        _ZN3sce2np7RingBufC1Ev(nullptr);
+    } catch (const std::invalid_argument&) {
+        untouchedThrew = true;
+    }
+    Require(untouchedThrew && errno == 71);
+    Require(ring.vtable == savedVtable && ring.buf == savedBuf && ring.readPointer == savedReadPointer &&
+            ring.writePointer == savedWritePointer && ring.size == savedSize && ring.bufSize == savedBufSize);
+
+    std::array<std::uint8_t, 16> storage{};
+    NpRingBuf live{};
+    _ZN3sce2np7RingBufC1Ev(&live);
+    Require(live.vtable != nullptr && live.buf == nullptr && live.readPointer == nullptr &&
+            live.writePointer == nullptr && live.size == 0 && live.bufSize == 0);
+    Require(_ZN3sce2np7RingBuf4InitEPvm(&live, storage.data(), storage.size()) == 0);
+    _ZN3sce2np7RingBuf7DestroyEv(&live);
+    _ZN3sce2np7RingBufD1Ev(&live);
+}
+
 int main() {
     constexpr int tooSmall = static_cast<int>(0x80558008);
     const std::array<unsigned char, 4> input{0, 0x7f, 0x80, 0xff};
@@ -96,4 +146,5 @@ int main() {
         }
     }
     CheckRingBufCheckoutNullBlockSize();
+    CheckRingBufCtorNullSelf();
 }
